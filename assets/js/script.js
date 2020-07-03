@@ -169,7 +169,7 @@ $(".list-group").on("change", "input[type='text']", function() {
 
   // pass task's <li> element into aduitTask() to check new due date
   auditTask($(taskSpan).closest(".list-group-item"));
-})
+});
 
 $(".card .list-group").sortable({
   connectWith: $(".card .list-group"),
@@ -227,10 +227,10 @@ $("#trash").droppable({
     ui.draggable.remove();
   },
   over: function(event, ui) {
-    console.log("over");
+    $(".bottom-trash").addClass("bottom-trash-active");
   },
   out: function(event, ui) {
-    console.log("out");
+    $(".bottom-trash").removeClass("bottom-trash-active");
   }
 });
 
@@ -251,7 +251,7 @@ $("#task-form-modal").on("shown.bs.modal", function() {
 });
 
 // save button in modal was clicked
-$("#task-form-modal .btn-primary").click(function() {
+$("#task-form-modal .btn-save").click(function() {
   // get form values
   var taskText = $("#modalTaskDescription").val();
   var taskDate = $("#modalDueDate").val();
@@ -281,7 +281,12 @@ $("#remove-tasks").on("click", function() {
   saveTasks();
 });
 
+// reaudit tasks every 30 minutes
+setInterval(function() {
+  $(".card .list-group-item").each(function(el) {
+    auditTask(el);
+  });
+}, (1000 * 60) * 30);
+
 // load tasks for the first time
 loadTasks();
-
-
