@@ -44,6 +44,21 @@ var saveTasks = function() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 };
 
+$(".list-group").on("click", "p", function() {
+  //Creating a variable named "text"/ when "this"(in this case, referring to .list-group w/ p element) clicked/(.text()) save text in the p element/
+  //(.trim()) trim off any white-space before and/or after text./ This is all saved to variable "text".
+  var text = $(this)
+    .text()
+    .trim();
+  
+  var textInput = $("<textarea>")
+    .addClass("form-control")
+    .val(text); 
+    
+  $(this).replaceWith(textInput);
+  textInput.trigger("focus");  
+});
+
 $(".list-group").on("blur", "textarea", function() {
   //"This" in this function is referring to the textarea
   // get the textarea's current value/text
@@ -73,6 +88,26 @@ $(".list-group").on("blur", "textarea", function() {
   // replace textarea with p element
   $(this).replaceWith(taskP);
 
+});
+
+// due date was clicked
+$(".list-group").on("click", "span", function() {
+  // get current text
+  var date = $(this)
+    .text()
+    .trim();
+
+  // create new input element
+  var dateInput = $("<input>")
+    .attr("type", "text")
+    .addClass("form-control")
+    .val(date);
+
+  // swap out elements
+  $(this).replaceWith(dateInput);
+
+  // automatically focus on new element
+  dateInput.trigger("focus");
 });
 
 // value of due date was changed
@@ -106,43 +141,68 @@ $(".list-group").on("blur", "input[type='text']", function() {
   $(this).replaceWith(taskSpan);
 });
 
-// due date was clicked
-$(".list-group").on("click", "span", function() {
-  // get current text
-  var date = $(this)
-    .text()
-    .trim();
+$(".card .list-group").sortable({
+  connectWith: $(".card .list-group"),
+  scroll: false,
+  tolerance: "pointer",
+  helper: "clone",
+  activate: function() {
+    $(this).addClass("dropover");
+    $(".bottom-trash").addClass("bottom-trash-drag");
+  },
+  deactivate: function() {
+    $(this).removeClass("dropover");
+    $(".bottom-trash").removeClass("bottom-trash-drag");
+  },
+  over: function() {
+    $(this).addClass("dropover-active");
+  },
+  out: function() {
+    $(this).removeClass("dropover-active");
+  },
+  update: function(event) {
+    // array to store the task data in
+    var tempArr = [];
 
-  // create new input element
-  var dateInput = $("<input>")
-    .attr("type", "text")
-    .addClass("form-control")
-    .val(date);
+    // loop over current set of children in sortable list
+    $(this).children().each(function() {
+      var text = $(this)
+        .find("p")
+        .text()
+        .trim();
 
-  // swap out elements
-  $(this).replaceWith(dateInput);
+      var date = $(this)
+        .find("span")
+        .text()
+        .trim();
 
-  // automatically focus on new element
-  dateInput.trigger("focus");
+      tempArr.push({
+        text: text,
+        date: date
+      });
+    });
+    var arrName = $(this)
+      .attr("id")
+      .replace("list-", "");
+
+    tasks[arrName] = tempArr;
+    saveTasks();
+  }
 });
 
-$(".list-group").on("click", "p", function() {
-  //Creating a variable named "text"/ when "this"(in this case, referring to .list-group w/ p element) clicked/(.text()) save text in the p element/
-  //(.trim()) trim off any white-space before and/or after text./ This is all saved to variable "text".
-  var text = $(this)
-    .text()
-    .trim();
-  
-  var textInput = $("<textarea>")
-    .addClass("form-control")
-    .val(text); 
-    
-  $(this).replaceWith(textInput);
-  textInput.trigger("focus");  
+$("#trash").droppable({
+  accept: ".card .list-group-item",
+  tolerance: "touch",
+  drop: function(event, ui) {
+    ui.draggable.remove();
+  },
+  over: function(event, ui) {
+    console.log("over");
+  },
+  out: function(event, ui) {
+    console.log("out");
+  }
 });
-
-
-
 
 // modal was triggered
 $("#task-form-modal").on("show.bs.modal", function() {
